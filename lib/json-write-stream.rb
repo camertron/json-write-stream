@@ -8,7 +8,8 @@ class JsonWriteStream
   class << self
     def from_stream(stream)
       if block_given?
-        yield YieldingWriter.new(stream)
+        yield writer = YieldingWriter.new(stream)
+        writer.close
       else
         StatefulWriter.new(stream)
       end

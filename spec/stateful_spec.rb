@@ -88,14 +88,14 @@ describe JsonWriteStream::YieldingWriter do
   describe '#close_object' do
     it 'raises an error if an object is not currently being written' do
       stream_writer.write_array
-      expect(-> { stream_writer.close_object }).to raise_error(JsonWriteStream::NotAnObjectError)
+      expect(-> { stream_writer.close_object }).to raise_error(JsonWriteStream::NotInObjectError)
     end
   end
 
   describe '#close_array' do
     it 'raises an error if an array is not currently being written' do
       stream_writer.write_object
-      expect(-> { stream_writer.close_array }).to raise_error(JsonWriteStream::NotAnArrayError)
+      expect(-> { stream_writer.close_array }).to raise_error(JsonWriteStream::NotInArrayError)
     end
   end
 

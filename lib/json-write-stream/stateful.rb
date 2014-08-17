@@ -1,8 +1,8 @@
 # encoding: UTF-8
 
 class JsonWriteStream
-  class NotAnObjectError < StandardError; end
-  class NotAnArrayError < StandardError; end
+  class NotInObjectError < StandardError; end
+  class NotInArrayError < StandardError; end
   class EndOfStreamError < StandardError; end
 
   class StatefulWriter
@@ -48,7 +48,7 @@ class JsonWriteStream
         current.increment if current
         increment
       else
-        raise NotAnObjectError, 'not currently writing an object.'
+        raise NotInObjectError, 'not currently writing an object.'
       end
     end
 
@@ -58,7 +58,7 @@ class JsonWriteStream
         current.increment if current
         increment
       else
-        raise NotAnArrayError, 'not currently writing an array.'
+        raise NotInArrayError, 'not currently writing an array.'
       end
     end
 
