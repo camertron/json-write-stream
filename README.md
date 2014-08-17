@@ -49,13 +49,50 @@ Output:
 stream.string # => {"foo":"bar","baz":["goo"]}
 ```
 
+### Yielding Writers
+
+As far as yielding writers go, the example above contains everything you need. The stream will be automatically closed when the outermost block terminates.
+
+### Stateful Writers
+
+Stateful writers have a number of additional methods:
+
+```ruby
+stream = StringIO.new
+writer = JsonWriteStream.from_stream(stream)
+writer.write_object
+
+writer.in_object?    # => true, currently writing an object
+writer.in_array?     # => false, not currently writing an array
+writer.eos?          # => false, the stream is open and the outermost object hasn't been closed yet
+
+writer.close_object  # explicitly close the current object
+writer.eos?          # => true, the outermost object has been closed
+
+writer.write_array   # => raises JsonWriteStream::EndOfStreamError
+writer.close_array   # => raises JsonWriteStream::NotInArrayError
+
+writer.closed?       # => false, the stream is still open
+writer.close         # close the stream
+writer.closed?       # => true, the stream has been closed
+```
+
+### Writing to a File
+
+JsonWriteStream also supports streaming to a file via the `open` method:
+
+```ruby
+JsonWriteStream.open('path/to/file.json') do |writer|
+end
+```
+
 ## Requirements
 
 No external requirements.
 
 ## Running Tests
 
-`bundle exec rake` should do the trick. You can also run `bundle exec rspec`, which does the same thing.
+`bundle exec rake` should do the trick. Alternatively you can run `bundle exec rspec`, which does the same thing.
 
 ## Authors
 
