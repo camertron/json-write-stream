@@ -15,7 +15,7 @@ require 'json-write-stream'
 
 ### Examples for the Impatient
 
-There are two types of JSON write stream: one that uses blocks and yield to delimit arrays and objects, and one that's purely stateful. Here are two examples that produce the same output:
+There are two types of JSON write stream: one that uses blocks and `yield` to delimit arrays and objects, and one that's purely stateful. Here are two examples that produce the same output:
 
 Yielding:
 
@@ -81,9 +81,23 @@ writer.closed?       # => true, the stream has been closed
 
 JsonWriteStream also supports streaming to a file via the `open` method:
 
+Yielding:
+
 ```ruby
 JsonWriteStream.open('path/to/file.json') do |writer|
+  writer.write_object do |obj_writer|
+    ...
+  end
 end
+```
+
+Stateful:
+
+```ruby
+writer = JsonWriteStream.open('path/to/file.json')
+writer.write_object
+...
+writer.close
 ```
 
 ## Requirements
