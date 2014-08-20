@@ -23,6 +23,17 @@ describe JsonWriteStream do
       expect(writer).to be_a(stateful_writer)
       expect(writer.stream).to equal(stream)
     end
+
+    it 'supports specifying a different encoding' do
+      stream_writer.from_stream(stream, Encoding::UTF_16BE) do |writer|
+        writer.write_object do |obj_writer|
+          obj_writer.write_key_value('foo', 'bar')
+        end
+      end
+
+      expect(stream.string.bytes).to_not eq('{"foo":"bar"}'.bytes)
+      expect(stream.string.encode(Encoding::UTF_8).bytes).to eq('{"foo":"bar"}'.bytes)
+    end
   end
 
   describe '#open' do
@@ -39,6 +50,20 @@ describe JsonWriteStream do
       writer = stream_writer.open(tempfile)
       expect(writer).to be_a(stateful_writer)
       expect(writer.stream.path).to eq(tempfile.path)
+    end
+
+    it 'supports specifying a different encoding' do
+      stream_writer.open(tempfile, Encoding::UTF_16BE) do |writer|
+        writer.write_object do |obj_writer|
+          obj_writer.write_key_value('foo', 'bar')
+        end
+      end
+
+      written = tempfile.read
+      written.force_encoding(Encoding::UTF_16BE)
+
+      expect(written.bytes).to_not eq('{"foo":"bar"}'.bytes)
+      expect(written.encode(Encoding::UTF_8).bytes).to eq('{"foo":"bar"}'.bytes)
     end
   end
 end

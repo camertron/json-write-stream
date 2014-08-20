@@ -1,3 +1,7 @@
 == 1.0.0
 
 * Birthday!
+
+== 1.0.1
+
+* Support custom encodings (UTF-8, UTF-16, etc).

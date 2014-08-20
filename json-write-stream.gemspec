@@ -2,7 +2,7 @@ $:.unshift File.join(File.dirname(__FILE__), 'lib')
 require 'json-write-stream/version'
 
 Gem::Specification.new do |s|
-  s.name     = "rosette-active-record"
+  s.name     = "json-write-stream"
   s.version  = ::JsonWriteStream::VERSION
   s.authors  = ["Cameron Dutro"]
   s.email    = ["camertron@gmail.com"]
