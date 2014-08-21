@@ -9,5 +9,6 @@ matrix:
   allow_failures:
     - rvm:
       - jruby-head
+    - rvm:
       - rbx-2.2.7
 script: 'bundle exec rspec'
