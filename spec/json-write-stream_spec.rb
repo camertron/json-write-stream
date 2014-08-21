@@ -24,17 +24,15 @@ describe JsonWriteStream do
       expect(writer.stream).to equal(stream)
     end
 
-    if RUBY_ENGINE != 'rbx'
-      it 'supports specifying a different encoding' do
-        stream_writer.from_stream(stream, Encoding::UTF_16BE) do |writer|
-          writer.write_object do |obj_writer|
-            obj_writer.write_key_value('foo', 'bar')
-          end
+    it 'supports specifying a different encoding' do
+      stream_writer.from_stream(stream, Encoding::UTF_16BE) do |writer|
+        writer.write_object do |obj_writer|
+          obj_writer.write_key_value('foo', 'bar')
         end
-
-        expect(stream.string.bytes.to_a).to_not eq('{"foo":"bar"}'.bytes.to_a)
-        expect(stream.string.encode(Encoding::UTF_8).bytes.to_a).to eq('{"foo":"bar"}'.bytes.to_a)
       end
+
+      expect(stream.string.bytes.to_a).to_not eq('{"foo":"bar"}'.bytes.to_a)
+      expect(stream.string.encode(Encoding::UTF_8).bytes.to_a).to eq('{"foo":"bar"}'.bytes.to_a)
     end
   end
 
