@@ -1,6 +1,8 @@
 json-write-stream
 =================
 
+[![Build Status](https://travis-ci.org/camertron/json-write-stream.svg?branch=master)](http://travis-ci.org/camertron/json-write-stream)
+
 An easy, streaming way to generate JSON.
 
 ## Installation
