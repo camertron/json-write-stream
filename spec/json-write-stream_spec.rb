@@ -32,7 +32,7 @@ describe JsonWriteStream do
       end
 
       expect(stream.string.bytes).to_not eq('{"foo":"bar"}'.bytes)
-      expect(stream.string.encode(Encoding::UTF_8).bytes).to eq('{"foo":"bar"}'.bytes)
+      expect(stream.string.encode(Encoding::UTF_8).bytes.to_a).to eq('{"foo":"bar"}'.bytes.to_a)
     end
   end
 
@@ -62,8 +62,8 @@ describe JsonWriteStream do
       written = tempfile.read
       written.force_encoding(Encoding::UTF_16BE)
 
-      expect(written.bytes).to_not eq('{"foo":"bar"}'.bytes)
-      expect(written.encode(Encoding::UTF_8).bytes).to eq('{"foo":"bar"}'.bytes)
+      expect(written.bytes.to_a).to_not eq('{"foo":"bar"}'.bytes.to_a)
+      expect(written.encode(Encoding::UTF_8).bytes.to_a).to eq('{"foo":"bar"}'.bytes.to_a)
     end
   end
 end

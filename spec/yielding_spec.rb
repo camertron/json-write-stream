@@ -3,11 +3,20 @@
 require 'spec_helper'
 
 describe JsonWriteStream::YieldingWriter do
-  let(:stream) { StringIO.new }
+  let(:stream) do
+    StringIO.new.tap do |io|
+      io.set_encoding(Encoding::UTF_8)
+    end
+  end
+
   let(:stream_writer) { JsonWriteStream::YieldingWriter.new(stream) }
 
   def check_roundtrip(obj)
     YieldingRoundtripChecker.check_roundtrip(obj)
+  end
+
+  def utf8(str)
+    str.encode(Encoding::UTF_8)
   end
 
   it_behaves_like 'a json stream'
@@ -18,7 +27,7 @@ describe JsonWriteStream::YieldingWriter do
         object_writer.write_key_value(123, 'abc')
       end
 
-      expect(stream.string).to eq('{"123":"abc"}')
+      expect(stream.string).to eq(utf8('{"123":"abc"}'))
     end
 
     it 'supports non-string values' do
@@ -27,7 +36,7 @@ describe JsonWriteStream::YieldingWriter do
         object_writer.write_key_value('def', true)
       end
 
-      expect(stream.string).to eq('{"abc":123,"def":true}')
+      expect(stream.string).to eq(utf8('{"abc":123,"def":true}'))
     end
   end
 
