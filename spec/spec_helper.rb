@@ -17,6 +17,7 @@ class RoundtripChecker
       stream = StringIO.new
       writer = create_writer(stream)
       serialize(obj, writer)
+      writer.close
       new_obj = JSON.parse(stream.string)
       compare(obj, new_obj)
     end
