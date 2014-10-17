@@ -33,6 +33,9 @@ class JsonWriteStream
       writer.close
     end
 
+    def flush
+    end
+
     def close
       stream.close
     end

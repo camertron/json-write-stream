@@ -62,7 +62,7 @@ class JsonWriteStream
       end
     end
 
-    def close
+    def flush
       until stack.empty?
         if in_object?
           close_object
@@ -71,8 +71,13 @@ class JsonWriteStream
         end
       end
 
-      stream.close
       @closed = true
+      nil
+    end
+
+    def close
+      flush
+      stream.close
       nil
     end
 
