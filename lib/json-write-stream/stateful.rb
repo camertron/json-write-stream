@@ -139,8 +139,9 @@ class JsonWriteStream
       stream.write(':')
     end
 
-    def write_key_value(key, value)
+    def write_key_value(key, value, before = '')
       write_comma
+      stream.write(before)
       increment
       write_key(key)
       stream.write(":#{escape(value)}")
@@ -175,8 +176,9 @@ class JsonWriteStream
       stream.write('[')
     end
 
-    def write_element(element)
+    def write_element(element, before = '')
       write_comma
+      stream.write(before)
       increment
       stream.write(escape(element))
     end
