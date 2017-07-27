@@ -139,12 +139,14 @@ class JsonWriteStream
       stream.write(':')
     end
 
-    def write_key_value(key, value, before = '')
+    def write_key_value(key, value, options = DEFAULT_OPTIONS)
       write_comma
-      stream.write(before)
+      stream.write(options.fetch(:before, DEFAULT_OPTIONS[:before]))
       increment
       write_key(key)
-      stream.write(":#{escape(value)}")
+      stream.write(':')
+      stream.write(options.fetch(:between, DEFAULT_OPTIONS[:between]))
+      stream.write(escape(value))
     end
 
     def close
@@ -176,9 +178,9 @@ class JsonWriteStream
       stream.write('[')
     end
 
-    def write_element(element, before = '')
+    def write_element(element, options = DEFAULT_OPTIONS)
       write_comma
-      stream.write(before)
+      stream.write(options.fetch(:before, DEFAULT_OPTIONS[:before]))
       increment
       stream.write(escape(element))
     end

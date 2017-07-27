@@ -13,3 +13,7 @@
 == 1.1.0
 
 * Add way of inserting text after commas.
+
+== 1.2.0
+
+* Add way of inserting text between key/value pairs.

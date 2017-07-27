@@ -21,6 +21,22 @@ describe JsonWriteStream::YieldingWriter do
 
   it_behaves_like 'a json stream'
 
+  it 'respects the "before" option' do
+    stream_writer.write_object do |object_writer|
+      object_writer.write_key_value('foo', 'bar', before: "\n  ")
+    end
+
+    expect(stream.string).to eq("{\n  \"foo\":\"bar\"}")
+  end
+
+  it 'respects the "between" option' do
+    stream_writer.write_object do |object_writer|
+      object_writer.write_key_value('foo', 'bar', between: ' ')
+    end
+
+    expect(stream.string).to eq('{"foo": "bar"}')
+  end
+
   describe '#write_key_value' do
     it 'converts all keys to strings' do
       stream_writer.write_object do |object_writer|

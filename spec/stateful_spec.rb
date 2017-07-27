@@ -21,6 +21,22 @@ describe JsonWriteStream::YieldingWriter do
 
   it_behaves_like 'a json stream'
 
+  it 'respects the "before" option' do
+    stream_writer.write_object
+    stream_writer.write_key_value('foo', 'bar', before: "\n  ")
+    stream_writer.close
+
+    expect(stream.string).to eq("{\n  \"foo\":\"bar\"}")
+  end
+
+  it 'respects the "between" option' do
+    stream_writer.write_object
+    stream_writer.write_key_value('foo', 'bar', between: ' ')
+    stream_writer.close
+
+    expect(stream.string).to eq('{"foo": "bar"}')
+  end
+
   describe '#close' do
     it 'unwinds the stack, adds appropriate closing punctuation for each unclosed item, and closes the stream' do
       stream_writer.write_array

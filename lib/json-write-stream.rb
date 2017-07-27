@@ -6,6 +6,7 @@ require 'json-write-stream/stateful'
 
 class JsonWriteStream
   DEFAULT_ENCODING = Encoding::UTF_8
+  DEFAULT_OPTIONS = { before: '', between: '' }.freeze
 
   class << self
     def from_stream(stream, encoding = DEFAULT_ENCODING)
