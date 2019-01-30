@@ -9,10 +9,11 @@ describe JsonWriteStream::YieldingWriter do
     end
   end
 
-  let(:stream_writer) { JsonWriteStream::StatefulWriter.new(stream) }
+  let(:options) { {} }
+  let(:stream_writer) { JsonWriteStream::StatefulWriter.new(stream, options) }
 
-  def check_roundtrip(obj)
-    StatefulRoundtripChecker.check_roundtrip(obj)
+  def check_roundtrip(obj, options = {})
+    StatefulRoundtripChecker.check_roundtrip(obj, options)
   end
 
   def utf8(str)
@@ -21,20 +22,105 @@ describe JsonWriteStream::YieldingWriter do
 
   it_behaves_like 'a json stream'
 
-  it 'respects the "before" option' do
-    stream_writer.write_object
-    stream_writer.write_key_value('foo', 'bar', before: "\n  ")
-    stream_writer.close
+  context 'with the pretty option' do
+    let(:options) { { pretty: true } }
 
-    expect(stream.string).to eq("{\n  \"foo\":\"bar\"}")
-  end
+    it_behaves_like 'a json stream', pretty: true
 
-  it 'respects the "between" option' do
-    stream_writer.write_object
-    stream_writer.write_key_value('foo', 'bar', between: ' ')
-    stream_writer.close
+    it 'prettifies a basic array' do
+      stream_writer.write_array
+      stream_writer.write_element('foo')
+      stream_writer.close
+      expect(stream.string).to eq(<<~END.strip)
+        [
+          "foo"
+        ]
+      END
+    end
 
-    expect(stream.string).to eq('{"foo": "bar"}')
+    it 'prettifies a basic object' do
+      stream_writer.write_object
+      stream_writer.write_key_value('foo', 'bar')
+      stream_writer.close
+      expect(stream.string).to eq(<<~END.strip)
+        {
+          "foo": "bar"
+        }
+      END
+    end
+
+    it 'prettifies a complex structure' do
+      stream_writer.write_object
+      stream_writer.write_array('foo')
+      stream_writer.write_element('bar')
+      stream_writer.write_object
+      stream_writer.write_key_value('baz', 'moo')
+      stream_writer.write_array('gaz')
+      stream_writer.write_element('doo')
+      stream_writer.close_array
+      stream_writer.close_object
+      stream_writer.write_element('kal')
+      stream_writer.close_array
+      stream_writer.write_array('jim')
+      stream_writer.write_element('jill')
+      stream_writer.write_array
+      stream_writer.write_element('john')
+      stream_writer.close
+      expect(stream.string).to eq(<<~END.strip)
+        {
+          "foo": [
+            "bar",
+            {
+              "baz": "moo",
+              "gaz": [
+                "doo"
+              ]
+            },
+            "kal"
+          ],
+          "jim": [
+            "jill",
+            [
+              "john"
+            ]
+          ]
+        }
+      END
+    end
+
+    context 'and the indent_size option' do
+      let(:options) { super().merge(indent_size: 4) }
+
+      it 'indents a basic object correctly' do
+        stream_writer.write_object
+        stream_writer.write_key_value('foo', 'bar')
+        stream_writer.close
+        expect(stream.string).to eq(<<~END.strip)
+          {
+              "foo": "bar"
+          }
+        END
+      end
+
+      it 'indents a more complicated object correctly' do
+        stream_writer.write_object
+        stream_writer.write_array('foo')
+        stream_writer.write_element('bar')
+        stream_writer.write_object
+        stream_writer.write_key_value('baz', 'moo')
+        stream_writer.close
+        expect(stream.string).to eq(<<~END.strip)
+          {
+              "foo": [
+                  "bar",
+                  {
+                      "baz": "moo"
+                  }
+              ]
+          }
+        END
+      end
+    end
   end
 
   describe '#close' do

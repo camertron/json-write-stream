@@ -102,6 +102,31 @@ writer.write_object
 writer.close
 ```
 
+### Options
+
+JsonWriteStream supports generating "pretty" JSON, i.e. JSON formatted in a more human-readable way. Currently only the stateful writer supports pretty generation. Example:
+
+```ruby
+stream = StringIO.new
+writer = JsonWriteStream.from_stream(stream, pretty: true)
+writer.write_object
+writer.write_key_value('foo', 'bar')
+writer.write_array('baz')
+writer.write_element('goo')
+writer.close
+```
+
+Now `stream.string` will contain
+
+```json
+{
+  "foo": "bar",
+  "baz": [
+    "goo"
+  ]
+}
+```
+
 ## Requirements
 
 No external requirements.

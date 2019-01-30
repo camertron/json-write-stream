@@ -2,11 +2,12 @@
 
 class JsonWriteStream
   class YieldingWriter
-    attr_reader :stream, :index
+    attr_reader :stream, :index, :options
 
-    def initialize(stream)
+    def initialize(stream, options = {})
       @stream = stream
       @index = 0
+      @options = options
       after_initialize
     end
 
@@ -60,33 +61,27 @@ class JsonWriteStream
       stream.write('{')
     end
 
-    def write_array(key, options = DEFAULT_OPTIONS)
+    def write_array(key)
       write_comma
-      stream.write(options.fetch(:before, DEFAULT_OPTIONS[:before]))
       increment
       write_key(key)
       stream.write(':')
-      stream.write(options.fetch(:between, DEFAULT_OPTIONS[:between]))
       super(true)
     end
 
-    def write_object(key, options = DEFAULT_OPTIONS)
+    def write_object(key)
       write_comma
-      stream.write(options.fetch(:before, DEFAULT_OPTIONS[:before]))
       increment
       write_key(key)
       stream.write(':')
-      stream.write(options.fetch(:between, DEFAULT_OPTIONS[:between]))
       super(true)
     end
 
-    def write_key_value(key, value, options = DEFAULT_OPTIONS)
+    def write_key_value(key, value)
       write_comma
-      stream.write(options.fetch(:before, DEFAULT_OPTIONS[:before]))
       increment
       write_key(key)
       stream.write(':')
-      stream.write(options.fetch(:between, DEFAULT_OPTIONS[:between]))
       stream.write(escape(value))
     end
 
@@ -106,9 +101,8 @@ class JsonWriteStream
       stream.write('[')
     end
 
-    def write_element(element, options = DEFAULT_OPTIONS)
+    def write_element(element)
       write_comma
-      stream.write(options.fetch(:before, DEFAULT_OPTIONS[:before]))
       increment
       stream.write(escape(element))
     end

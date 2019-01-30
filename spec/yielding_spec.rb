@@ -11,8 +11,8 @@ describe JsonWriteStream::YieldingWriter do
 
   let(:stream_writer) { JsonWriteStream::YieldingWriter.new(stream) }
 
-  def check_roundtrip(obj)
-    YieldingRoundtripChecker.check_roundtrip(obj)
+  def check_roundtrip(obj, options = {})
+    YieldingRoundtripChecker.check_roundtrip(obj, options)
   end
 
   def utf8(str)
@@ -20,22 +20,7 @@ describe JsonWriteStream::YieldingWriter do
   end
 
   it_behaves_like 'a json stream'
-
-  it 'respects the "before" option' do
-    stream_writer.write_object do |object_writer|
-      object_writer.write_key_value('foo', 'bar', before: "\n  ")
-    end
-
-    expect(stream.string).to eq("{\n  \"foo\":\"bar\"}")
-  end
-
-  it 'respects the "between" option' do
-    stream_writer.write_object do |object_writer|
-      object_writer.write_key_value('foo', 'bar', between: ' ')
-    end
-
-    expect(stream.string).to eq('{"foo": "bar"}')
-  end
+  it_behaves_like 'a json stream', pretty: true
 
   describe '#write_key_value' do
     it 'converts all keys to strings' do

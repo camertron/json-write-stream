@@ -6,21 +6,22 @@ require 'json-write-stream/stateful'
 
 class JsonWriteStream
   DEFAULT_ENCODING = Encoding::UTF_8
-  DEFAULT_OPTIONS = { before: '', between: '' }.freeze
 
   class << self
-    def from_stream(stream, encoding = DEFAULT_ENCODING)
+    def from_stream(stream, options = {})
+      encoding = options.fetch(:encoding, DEFAULT_ENCODING)
       stream.set_encoding(encoding)
 
       if block_given?
         yield writer = YieldingWriter.new(stream)
         writer.close
       else
-        StatefulWriter.new(stream)
+        StatefulWriter.new(stream, options)
       end
     end
 
-    def open(file, encoding = DEFAULT_ENCODING)
+    def open(file, options = {})
+      encoding = options.fetch(:encoding, DEFAULT_ENCODING)
       handle = File.open(file, 'w')
       handle.set_encoding(encoding)
 
@@ -28,7 +29,7 @@ class JsonWriteStream
         yield writer = YieldingWriter.new(handle)
         writer.close
       else
-        StatefulWriter.new(handle)
+        StatefulWriter.new(handle, options)
       end
     end
   end

@@ -1,35 +1,47 @@
 # encoding: UTF-8
 
+require 'json'
+
 class JsonWriteStream
   class NotInObjectError < StandardError; end
   class NotInArrayError < StandardError; end
   class EndOfStreamError < StandardError; end
 
   class StatefulWriter
-    attr_reader :stream, :index, :stack, :closed
-    alias :closed? :closed
+    attr_reader :stream, :stack, :index, :closed, :options
+    alias_method :closed?, :closed
 
-    def initialize(stream)
+    def initialize(stream, options = {})
       @stream = stream
-      @index = 0
       @stack = []
       @closed = false
-      after_initialize
-    end
-
-    def after_initialize
+      @options = options
+      @index = 0
     end
 
     def write_object(*args)
       check_eos
-      current.write_object(*args) if current
-      stack.push(StatefulObjectWriter.new(stream))
+      new_indent_level = 1
+
+      if current
+        current.write_object(*args)
+        new_indent_level = current.indent_level + 1
+      end
+
+      stack.push(StatefulObjectWriter.new(self, new_indent_level))
     end
 
     def write_array(*args)
       check_eos
-      current.write_array(*args) if current
-      stack.push(StatefulArrayWriter.new(stream))
+
+      new_indent_level = 1
+
+      if current
+        current.write_array(*args)
+        new_indent_level = current.indent_level + 1
+      end
+
+      stack.push(StatefulArrayWriter.new(self, new_indent_level))
     end
 
     def write_key_value(*args)
@@ -93,7 +105,19 @@ class JsonWriteStream
       (stack.size == 0 && index > 0) || closed?
     end
 
+    def pretty?
+      options.fetch(:pretty, false)
+    end
+
+    def indent_size
+      options.fetch(:indent_size, 2)
+    end
+
     protected
+
+    def increment
+      @index += 1
+    end
 
     def check_eos
       if eos?
@@ -104,53 +128,99 @@ class JsonWriteStream
     def current
       stack.last
     end
+  end
+
+  class BaseWriter
+    attr_reader :writer, :indent_level, :index
+
+    def initialize(writer, indent_level)
+      @writer = writer
+      @indent_level = indent_level
+      @index = 0
+      after_initialize
+    end
+
+    def after_initialize
+    end
+
+    def stream
+      writer.stream
+    end
+
+    def increment
+      @index += 1
+    end
+
+    def indent(level = indent_level)
+      stream.write(' ' * indent_size * level) if pretty?
+    end
+
+    def indent_size
+      writer.indent_size
+    end
 
     def escape(str)
       JSON.generate([str])[1..-2]
     end
 
     def write_comma
-      stream.write(',') if index > 0
+      if index > 0
+        stream.write(",")
+        write_newline
+      end
     end
 
-    def increment
-      @index += 1
+    def write_colon
+      stream.write(':')
+      stream.write(' ') if pretty?
+    end
+
+    def write_newline
+      stream.write("\n") if pretty?
+    end
+
+    def pretty?
+      writer.pretty?
     end
   end
 
-  class StatefulObjectWriter < StatefulWriter
+  class StatefulObjectWriter < BaseWriter
     def after_initialize
-      stream.write('{')
+      stream.write("{")
+      write_newline
     end
 
     # prep work (array is written afterwards)
     def write_array(key)
       write_comma
       increment
+      indent
       write_key(key)
-      stream.write(':')
+      write_colon
     end
 
     # prep work (object is written afterwards)
     def write_object(key)
       write_comma
       increment
+      indent
       write_key(key)
-      stream.write(':')
+      write_colon
     end
 
-    def write_key_value(key, value, options = DEFAULT_OPTIONS)
+    def write_key_value(key, value)
       write_comma
-      stream.write(options.fetch(:before, DEFAULT_OPTIONS[:before]))
       increment
+      indent
       write_key(key)
-      stream.write(':')
-      stream.write(options.fetch(:between, DEFAULT_OPTIONS[:between]))
+      write_colon
       stream.write(escape(value))
     end
 
     def close
-      stream.write('}')
+      write_newline
+      indent(indent_level - 1)
+      stream.write("}")
     end
 
     def is_object?
@@ -173,15 +243,16 @@ class JsonWriteStream
     end
   end
 
-  class StatefulArrayWriter < StatefulWriter
+  class StatefulArrayWriter < BaseWriter
     def after_initialize
-      stream.write('[')
+      stream.write("[")
+      write_newline
     end
 
-    def write_element(element, options = DEFAULT_OPTIONS)
+    def write_element(element)
       write_comma
-      stream.write(options.fetch(:before, DEFAULT_OPTIONS[:before]))
       increment
+      indent
       stream.write(escape(element))
     end
 
@@ -189,16 +260,20 @@ class JsonWriteStream
     def write_array
       write_comma
       increment
+      indent
     end
 
     # prep work
     def write_object
       write_comma
       increment
+      indent
     end
 
     def close
-      stream.write(']')
+      write_newline
+      indent(indent_level - 1)
+      stream.write("]")
     end
 
     def is_object?

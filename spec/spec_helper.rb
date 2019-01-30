@@ -3,19 +3,18 @@
 require 'rspec'
 require 'json-write-stream'
 require 'shared_examples'
-require 'pry-nav'
+require 'pry-byebug'
 
 RSpec.configure do |config|
-  config.mock_with :rr
 end
 
 class RoundtripChecker
   class << self
     include RSpec::Matchers
 
-    def check_roundtrip(obj)
+    def check_roundtrip(obj, options = {})
       stream = StringIO.new
-      writer = create_writer(stream)
+      writer = create_writer(stream, options)
       serialize(obj, writer)
       writer.close
       new_obj = JSON.parse(stream.string)
@@ -49,8 +48,8 @@ class YieldingRoundtripChecker < RoundtripChecker
   class << self
     protected
 
-    def create_writer(stream)
-      JsonWriteStream::YieldingWriter.new(stream)
+    def create_writer(stream, options = {})
+      JsonWriteStream::YieldingWriter.new(stream, options)
     end
 
     def serialize(obj, writer)
@@ -106,8 +105,8 @@ class StatefulRoundtripChecker < RoundtripChecker
   class << self
     protected
 
-    def create_writer(stream)
-      JsonWriteStream::StatefulWriter.new(stream)
+    def create_writer(stream, options = {})
+      JsonWriteStream::StatefulWriter.new(stream, options)
     end
 
     def serialize(obj, writer)
